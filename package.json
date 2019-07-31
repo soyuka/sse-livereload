@@ -1,0 +1,19 @@
+{
+  "name": "sse-livereload",
+  "version": "1.0.0",
+  "description": "Minimal livereload dev server",
+  "main": "server.js",
+  "repository": "git@github.com:soyuka/sse-livereload",
+  "author": "soyuka <soyuka@users.noreply.github.com>",
+  "license": "MIT",
+  "bin": {"sse-livereload": "./server.js"},
+  "dependencies": {
+    "@babel/core": "^7.5.5",
+    "appendify": "^0.1.0",
+    "babelify": "^10.0.0",
+    "browserify": "^16.3.0",
+    "minimist": "^1.2.0",
+    "serve-handler": "^6.1.0",
+    "watchify": "^3.11.1"
+  }
+}
