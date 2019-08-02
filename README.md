@@ -10,6 +10,10 @@ npm install sse-livereload
 
 ## Usage
 
+Use the `sse-livereload template [path]` command to setup a boilerplate for your project and start hacking.
+
+Then, just serve the directory with:
+
 ```
 # with an index.js
 sse-livereload
@@ -17,7 +21,14 @@ sse-livereload
 sse-livereload main.js
 ```
 
-Will create a `bundle.js` file.
+In other words:
+
+```
+npm install sse-livereload
+sse-livereload template
+sse-livereload
+# start hacking
+```
 
 ## Options
 

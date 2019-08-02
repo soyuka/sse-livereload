@@ -4,11 +4,32 @@ const serve = require('serve-handler')
 const browserify = require('browserify')
 const http = require('http')
 const fs   = require('fs')
+const path   = require('path')
 const argv = require('minimist')(process.argv.slice(2));
-
 const SseStream = require('./ssestream.js')
-
 const clients = new Map()
+
+async function copy(file, dest) {
+  return new Promise(function (resolve, reject) {
+    fs.createReadStream(`${__dirname}/test/${file}`)
+    .on('end', resolve)
+    .on('error', reject)
+    .pipe(fs.createWriteStream(`${dest}/${file}`))
+  })
+}
+
+async function template(dest) {
+  try {
+    await copy('index.html', dest)
+    await copy('.babelrc', dest)
+    await copy('index.js', dest)
+    await copy('style.css', dest)
+    process.exit(0)
+  } catch(err) {
+    console.error(err)
+    process.exit(1)
+  }
+}
 
 function send(data) {
   for (let [,client] of clients) {
@@ -36,6 +57,12 @@ function onRequest(req, res) {
   }
 
   return serve(req, res);
+}
+
+if (argv._[0] === 'template') {
+  const dest = path.resolve(process.cwd(), argv._[1] || '.')
+  template(dest)
+  return
 }
 
 const PORT = process.env.PORT || 8080
