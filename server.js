@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var through = require('through');
 const watchify = require('watchify')
 const appendify = require('appendify')
 const serve = require('serve-handler')
@@ -44,7 +45,7 @@ function bundle() {
   b.bundle()
     .on('error', (err) => {
       console.error('Bundle error:')
-      console.error(err)
+      console.error(err.stack)
       send({event: 'builderror', data: err})
     })
     .on('end', () => {
@@ -68,6 +69,35 @@ function onRequest(req, res) {
   return serve(req, res);
 }
 
+function prependSseLivereload(file) {
+  if (file !== entries[0]) {
+    return through()
+  }
+
+  var data = `
+const es = new EventSource(window.location.origin + '/events')
+es.addEventListener('reload', function(e) {
+  window.location.reload()
+})
+
+es.addEventListener('builderror', function(e) {
+  console.error(e.data)
+})
+
+es.onopen = function() {
+  console.log('Communication with development server is open.')
+}
+`
+
+  return through(write, end);
+
+  function write (buf) { data += buf }
+  function end () {
+    this.queue(data);
+    this.queue(null);
+  }
+}
+
 if (argv._[0] === 'template') {
   const dest = path.resolve(process.cwd(), argv._[1] || '.')
   template(dest)
@@ -86,22 +116,7 @@ const b = browserify({
   plugin: [watchify]
 })
 .transform('babelify')
-.transform(appendify, {
-  glob: 'index.js',
-  string: `
-const es = new EventSource(window.location.origin + '/events')
-es.addEventListener('reload', function(e) {
-  window.location.reload()
-})
-
-es.addEventListener('builderror', function(e) {
-  console.error(e.data)
-})
-
-es.onopen = function() {
-  console.log('Communication with development server is open.')
-}`
-});
+.transform(prependSseLivereload);
 
 b.on('update', bundle);
 bundle();

@@ -24,7 +24,7 @@ sse-livereload main.js
 In other words:
 
 ```
-npm install sse-livereload
+yarn add sse-livereload @babel/preset-env
 sse-livereload template
 sse-livereload
 # start hacking
