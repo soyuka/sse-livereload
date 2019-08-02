@@ -42,8 +42,15 @@ function send(data) {
 function bundle() {
   const write = fs.createWriteStream('bundle.js')
   b.bundle()
-    .on('error', (err) => send({event: 'builderror', data: err}))
-    .on('end', () => send({event: 'reload', data: {}}))
+    .on('error', (err) => {
+      console.error('Bundle error:')
+      console.error(err)
+      send({event: 'builderror', data: err})
+    })
+    .on('end', () => {
+      console.log('Bundled')
+      send({event: 'reload', data: {}})
+    })
     .pipe(write)
 }
 
@@ -69,8 +76,10 @@ if (argv._[0] === 'template') {
 
 const PORT = process.env.PORT || 8080
 const HOST = process.env.HOST || 'localhost'
+const entries = argv._.length ? argv._ : [path.join(process.cwd(), 'index.js')];
+console.log('Starting browserify on %s', entries)
 const b = browserify({
-  entries: argv._.length ? argv._ : ['index.js'],
+  entries,
   cache: {},
   packageCache: {},
   debug: true, //enables source maps
@@ -97,4 +106,6 @@ es.onopen = function() {
 b.on('update', bundle);
 bundle();
 
-http.createServer(onRequest).listen(PORT, HOST);
+http.createServer(onRequest).listen(PORT, HOST, function() {
+  console.log(`Development server started on ${HOST}:${PORT}`)
+});
