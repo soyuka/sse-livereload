@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const watchify = require('watchify')
 const appendify = require('appendify')
 const serve = require('serve-handler')
