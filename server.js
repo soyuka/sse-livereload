@@ -11,6 +11,7 @@ const path   = require('path')
 const argv = require('minimist')(process.argv.slice(2));
 const SseStream = require('./ssestream.js')
 const clients = new Map()
+let id = 0
 
 async function copy(file, dest) {
   return new Promise(function (resolve, reject) {
@@ -46,11 +47,11 @@ function bundle() {
     .on('error', (err) => {
       console.error('Bundle error:')
       console.error(err.stack)
-      send({event: 'builderror', data: err})
+      send({event: 'builderror', data: {error: err.message, stack: err.stack}, id: ++id})
     })
     .on('end', () => {
       console.log('Bundled')
-      send({event: 'reload', data: {}})
+      send({event: 'reload', data: {}, id: ++id})
     })
     .pipe(write)
 }
